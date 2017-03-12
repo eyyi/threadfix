@@ -48,7 +48,7 @@ public class CommandLineMain {
         CommandLineMain main = SpringConfiguration.getContext().getBean(CommandLineMain.class);
         LOGGER.info("Initialization finished in " + (System.currentTimeMillis() - startTime) + " ms");
 
-        String path = "/Users/gabrieleyyi/Cloud/Dropbox/01_MSE/06_VT2/07_Daten_3/big_threadfix_importer/scanner2";
+        String path = "/Users/gabrieleyyi/Cloud/Dropbox/01_MSE/06_VT2/07_Daten_3/big_threadfix_importer/scanner_4";
          //String path = args[0];
         String[] xmlFiles = main.processAll(path);
 
