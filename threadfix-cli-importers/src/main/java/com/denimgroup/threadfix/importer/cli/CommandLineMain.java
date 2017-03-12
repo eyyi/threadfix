@@ -30,6 +30,11 @@ import com.denimgroup.threadfix.logging.SanitizedLogger;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class CommandLineMain {
@@ -37,13 +42,17 @@ public class CommandLineMain {
     private static final SanitizedLogger LOGGER = new SanitizedLogger(CommandLineMain.class);
 
     public static void main(String[] args) {
+
+
         long startTime = System.currentTimeMillis();
-
         CommandLineMain main = SpringConfiguration.getContext().getBean(CommandLineMain.class);
-
         LOGGER.info("Initialization finished in " + (System.currentTimeMillis() - startTime) + " ms");
 
-        main.mainWithSpring(args);
+        String path = "/Users/gabrieleyyi/Cloud/Dropbox/01_MSE/06_VT2/07_Daten_3/big_threadfix_importer/scanner2";
+         //String path = args[0];
+        String[] xmlFiles = main.processAll(path);
+
+        // main.mainWithSpring(args);
     }
 
     public void mainWithSpring(String[] args) {
@@ -77,4 +86,33 @@ public class CommandLineMain {
 
         return true;
     }
+
+
+    public String[] processAll(String reportDir){
+        String path = reportDir;
+        File folder = new File(path);
+        File[] listOfFiles = folder.listFiles();
+        List<String> xmlFiles = new ArrayList<>();
+        String xmlPath = "";
+
+        for(int i=0; i<listOfFiles.length;i++){
+            String currentFile = listOfFiles[i].getName();
+            if(currentFile.contains(".xml") || currentFile.contains(".zip")){
+                xmlPath = listOfFiles[i].getAbsolutePath();
+                LOGGER.info(xmlPath);
+                String output = SpringConfiguration.getContext().getBean(ScanParser.class).readFile(xmlPath);
+                try {
+                    Files.write(Paths.get(xmlPath+"_.csv"), output.getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                xmlFiles.add(xmlPath);
+            }
+        }
+
+        String[] xmlArr = new String[xmlFiles.size()];
+        xmlArr = xmlFiles.toArray(xmlArr);
+        return xmlArr;
+    }
+
 }
