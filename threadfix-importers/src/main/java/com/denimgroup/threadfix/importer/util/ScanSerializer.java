@@ -45,8 +45,8 @@ public class ScanSerializer {
 
         StringBuilder builder = new StringBuilder();
 
-        builder.append("Scanner Vulnerability code, Scanner Vulnerability name, " +
-                "CWE Name, CWE Code, severity, file, path, parameter, line number\n");
+        builder.append("nativeId, Scanner Vulnerability code, Scanner Vulnerability name, Long Desc, " +
+                "CWE Code, CWE Name, Scanner, severity, file, path, parameter, line number\n");
 
 
         for (Finding finding : scan) {
@@ -123,6 +123,23 @@ public class ScanSerializer {
         } else {
             innerBuilder.append(finding.getChannelVulnerability().getGenericVulnerability().getName()).append(',');
             innerBuilder.append(finding.getChannelVulnerability().getGenericVulnerability().getId()).append(',');
+        }
+
+        if(finding.getLongDescription() == null){
+            System.out.println("Longdesc type was null.");
+            innerBuilder.append(",");
+        }else{
+            //long desc
+            innerBuilder.append(finding.getLongDescription()).append(',');
+        }
+
+
+        if(finding.getChannelVulnerability().getChannelType() == null){
+            System.out.println("Channel type was null.");
+            innerBuilder.append(",");
+        } else {
+            //scanner name
+            innerBuilder.append(finding.getChannelVulnerability().getChannelType().getName()).append(',');
         }
 
         if (finding.getChannelSeverity() == null) {
