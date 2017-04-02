@@ -38,6 +38,9 @@ public class ScanSerializer {
     // We only want to throw errors if we're testing. Otherwise let's have defaults.
     public static boolean THROW_ERRORS = System.getProperty("SCAN_FILE_LOCATION") != null;
 
+    public static String SEPARATOR = "|";
+
+
     // Format is channel vuln code, channel vuln name, CWE, severity, file, path, parameter
     // TODO make this more configurable.
     public static String toCSVString(Scan scan) {
@@ -45,8 +48,9 @@ public class ScanSerializer {
 
         StringBuilder builder = new StringBuilder();
 
-        builder.append("nativeId, Scanner Vulnerability code, Scanner Vulnerability name, Long Desc, " +
-                "CWE Code, CWE Name, Scanner, severity, file, path, parameter, line number\n");
+        builder.append("nativeId"+SEPARATOR+"Scanner Vulnerability code"+SEPARATOR+"Scanner Vulnerability name"+SEPARATOR+"CWE Name"+
+                SEPARATOR+"CWE Code"+SEPARATOR+"Long Desc"+SEPARATOR+"Scanner"+SEPARATOR+"severity"+SEPARATOR+"file"+
+                SEPARATOR+"path"+SEPARATOR+"parameter"+SEPARATOR+"line number\n");
 
 
         for (Finding finding : scan) {
@@ -90,28 +94,28 @@ public class ScanSerializer {
             throw new NullPointerException("Surface Location was null.");
         }
 
-        strings.add(finding.getChannelVulnerability().getCode() + ',' +
-                finding.getChannelVulnerability().getName() + ',' +
-                finding.getChannelVulnerability().getGenericVulnerability().getName() + ',' +
-                finding.getChannelVulnerability().getGenericVulnerability().getId() + ',' +
-                finding.getChannelSeverity().getName() + ',' +
-                finding.getSourceFileLocation() + ',' +
-                finding.getSurfaceLocation().getPath() + ',' +
-                finding.getSurfaceLocation().getParameter() + ',' +
-                getLineNumber(finding) + ',' + "\n");
+        strings.add(finding.getChannelVulnerability().getCode() + SEPARATOR +
+                finding.getChannelVulnerability().getName() + SEPARATOR +
+                finding.getChannelVulnerability().getGenericVulnerability().getName() + SEPARATOR +
+                finding.getChannelVulnerability().getGenericVulnerability().getId() + SEPARATOR +
+                finding.getChannelSeverity().getName() + SEPARATOR +
+                finding.getSourceFileLocation() + SEPARATOR +
+                finding.getSurfaceLocation().getPath() + SEPARATOR +
+                finding.getSurfaceLocation().getParameter() + SEPARATOR +
+                getLineNumber(finding) + SEPARATOR + "\n");
     }
 
     private static void examineAndPrintDefaults(Finding finding, Set<String> strings) {
         StringBuilder innerBuilder = new StringBuilder();
 
-        innerBuilder.append(finding.getNativeId()).append(',');
+        innerBuilder.append(finding.getNativeId()).append(SEPARATOR);
 
         if (finding.getChannelVulnerability() == null) {
             System.out.println("Got a channel vulnerability with no generic vulnerability.");
             return;
         } else {
-            innerBuilder.append(finding.getChannelVulnerability().getCode()).append(',');
-            innerBuilder.append(finding.getChannelVulnerability().getName()).append(',');
+            innerBuilder.append(finding.getChannelVulnerability().getCode()).append(SEPARATOR);
+            innerBuilder.append(finding.getChannelVulnerability().getName()).append(SEPARATOR);
         }
 
         if (finding.getChannelVulnerability().getGenericVulnerability() == null) {
@@ -119,34 +123,38 @@ public class ScanSerializer {
                     finding.getChannelVulnerability().getCode() + " and name " +
                     finding.getChannelVulnerability().getName());
 
-            innerBuilder.append(',').append(',');
+            innerBuilder.append(SEPARATOR).append(SEPARATOR);
         } else {
-            innerBuilder.append(finding.getChannelVulnerability().getGenericVulnerability().getName()).append(',');
-            innerBuilder.append(finding.getChannelVulnerability().getGenericVulnerability().getId()).append(',');
+            innerBuilder.append(finding.getChannelVulnerability().getGenericVulnerability().getName()).append(SEPARATOR);
+            innerBuilder.append(finding.getChannelVulnerability().getGenericVulnerability().getId()).append(SEPARATOR);
         }
 
-        if(finding.getLongDescription() == null){
-            System.out.println("Longdesc type was null.");
-            innerBuilder.append(",");
-        }else{
+        if(finding.getLongDescription() == null && finding.getScannerDetail() == null){
+            System.out.println("Longdesc type and scanner details was null.");
+            innerBuilder.append(SEPARATOR);
+        }else if(finding.getScannerDetail() == null){
             //long desc
-            innerBuilder.append(finding.getLongDescription()).append(',');
+            innerBuilder.append(finding.getLongDescription()).append(SEPARATOR);
+        }else {
+            String s = finding.getScannerDetail().replace(System.getProperty("line.separator")," ");
+            innerBuilder.append(s).append(SEPARATOR);
+
         }
 
 
         if(finding.getChannelVulnerability().getChannelType() == null){
             System.out.println("Channel type was null.");
-            innerBuilder.append(",");
+            innerBuilder.append(SEPARATOR);
         } else {
             //scanner name
-            innerBuilder.append(finding.getChannelVulnerability().getChannelType().getName()).append(',');
+            innerBuilder.append(finding.getChannelVulnerability().getChannelType().getName()).append(SEPARATOR);
         }
 
         if (finding.getChannelSeverity() == null) {
             System.out.println("Channel severity was null.");
-            innerBuilder.append(",");
+            innerBuilder.append(SEPARATOR);
         } else {
-            innerBuilder.append(finding.getChannelSeverity().getName()).append(',');
+            innerBuilder.append(finding.getChannelSeverity().getName()).append(SEPARATOR);
         }
 
         if (finding.getChannelSeverity().getSeverityMap() == null ||
@@ -156,19 +164,19 @@ public class ScanSerializer {
                     + " didn't have a generic mapping.");
         }
 
-        innerBuilder.append(finding.getSourceFileLocation()).append(',');
+        innerBuilder.append(finding.getSourceFileLocation()).append(SEPARATOR);
 
         if (finding.getSurfaceLocation() == null) {
             System.out.println("Surface Location was null.");
         } else {
-            innerBuilder.append(finding.getSurfaceLocation().getPath()).append(',');
+            innerBuilder.append(finding.getSurfaceLocation().getPath()).append(SEPARATOR);
             if (finding.getSurfaceLocation().getParameter() != null) {
                 innerBuilder.append(finding.getSurfaceLocation().getParameter());
             }
-            innerBuilder.append(',');
+            innerBuilder.append(SEPARATOR);
         }
 
-        innerBuilder.append(getLineNumber(finding)).append(',');
+        innerBuilder.append(getLineNumber(finding)).append(SEPARATOR);
         innerBuilder.append("\n");
 
         strings.add(innerBuilder.toString());
